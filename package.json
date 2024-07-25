@@ -1,0 +1,27 @@
+{
+  "name": "frontend-project-11",
+  "version": "1.0.0",
+  "description": "[![Actions Status](https://github.com/Crenby/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Crenby/frontend-project-11/actions)",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack serve",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.0",
+    "postcss-loader": "^8.1.1",
+    "sass": "^1.77.8",
+    "sass-loader": "^15.0.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3"
+  }
+}
