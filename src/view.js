@@ -1,4 +1,5 @@
 const input = document.querySelector("#url-input");
+const feedback = document.querySelector(".feedback");
 
 export default function view(path, value) {
   switch(path) {
@@ -9,5 +10,7 @@ export default function view(path, value) {
         input.classList.remove('is-invalid');
       }
       break;
+    case 'form.errors':
+      feedback.textContent = value;
   }
 }

@@ -1,32 +1,57 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
 import view from './view';
+import i18next from 'i18next';
+import resources from './locales/index.js';
 
 export default function app() {
 
   const state = {
     form: {
+      status: null,
       validUrl: false,
-      emptyUrl: false,
+      errors: null,
     },
     fids: [],
+  };
+
+  const defaultLang = 'ru';
+
+  const i18n = i18next.createInstance();
+  i18n.init({
+    debug: false,
+    lng: defaultLang,
+    resources,
+  })
+
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    input: document.querySelector('#url-input'),
+    errorFields: {},
   }
+
+  yup.setLocale({
+    mixed: {
+      required: i18n.t('errors.required'),
+      notOneOf:  i18n.t('errors.exists'),
+    },
+    string: {
+      url:  i18n.t('errors.invalidUrl'),
+    },
+  })
 
   function validate(fields, fids) {
     const schema = yup.object({
-      url: yup.string().url().notOneOf(fids),
+      url: yup.string().required().url().notOneOf(fids),
     });
     return schema.validate(fields);
   };
-
-  const form = document.querySelector('.rss-form');
-  const input = document.querySelector("#url-input");
-
+ 
   const watchedState = onChange(state, (path, value) => {
     view(path, value);
   });
 
-  form.addEventListener('submit', (e) => {
+  elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
@@ -37,13 +62,15 @@ export default function app() {
         console.log("good");
         watchedState.fids.push(out);
         watchedState.form.validUrl = false;
-        input.focus();
-        form.reset();
-
+        watchedState.form.errors = null;
+        elements.input.focus();
+        elements.form.reset();
       })
-      .catch(() => {
+      .catch((e) => {
         console.log("nogood");
+        console.log(e.message);
         watchedState.form.validUrl = true;
+        watchedState.form.errors = e.message;
       })
 
   });
