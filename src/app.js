@@ -1,13 +1,13 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
-import view from './view';
+import { view } from './view.js';
+import { upDataRender } from './view.js';
 import i18next from 'i18next';
 import resources from './locales/index.js';
 import axios from 'axios';
 import parser from './parser.js';
 
 export default function app() {
-
   const state = {
     form: {
       status: null,
@@ -16,6 +16,7 @@ export default function app() {
     },
     fids: [],
     data: [],
+    upData: [],
   };
 
   const defaultLang = 'ru';
@@ -53,6 +54,44 @@ export default function app() {
     view(state, path, value);
   });
 
+  function upData(state) {
+    state.fids.forEach((fid) => {
+      axios.get(getFullUrl(fid))
+        .then((response) => {
+          const newData = parser(response);
+          const filtData = [[state.upData]].flat(Infinity);
+  
+          state.data.forEach((oldItem) => {
+            oldItem.items.forEach((item) => {
+              filtData.push(item.title);
+            })
+          })
+
+          newData.items.forEach((item) => {
+            if (!filtData.includes(item.title)) {
+              upDataRender(item);
+              state.upData.push(item.title);
+              console.log(state.upData);
+              console.log(filtData);
+            }
+          })
+
+          setTimeout(upData, 5000, state);
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+    })
+  }
+
+  const getFullUrl = (rssUrl) => {
+    const url = new URL('/get', 'https://allorigins.hexlet.app');
+    const { searchParams } = url;
+    searchParams.set('url', rssUrl);
+    searchParams.set('disableCache', 'true');
+    return url.toString();
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -62,19 +101,19 @@ export default function app() {
     validate({ url: out }, state.fids)
       .then(() => {
         console.log("good");
-        watchedState.fids.push(out);
-        watchedState.form.validUrl = false;
-        watchedState.form.errors = null;
-
-        axios.get(`https://allorigins.hexlet.app/get?url=${out}`)
+        axios.get(getFullUrl(out))
           .then((response) => {
-            watchedState.data.unshift(parser(response)); 
-            watchedState.form.status = i18n.t('errors.validUrl');   
+            watchedState.fids.unshift(out);
+            watchedState.form.validUrl = false;
+            watchedState.form.errors = null;
+            watchedState.data.unshift(parser(response));
+            watchedState.form.status = i18n.t('errors.validUrl');
+            upData(state);
           })
           .catch((e) => {
-            if(e.isParsingError) {
+            if (e.isParsingError) {
               watchedState.form.errors = i18n.t('errors.invalidRss');
-            } else if(e.message === 'Network Error') {
+            } else if (e.message === 'Network Error') {
               watchedState.form.errors = i18n.t('errors.network');
             } else {
               watchedState.form.errors = i18n.t('errors.unknown');
