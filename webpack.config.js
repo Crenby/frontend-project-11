@@ -12,14 +12,14 @@ module.exports = {
   module: {
     rules: [
       {
-        //test: /\.css$/, // Регулярное выражение для обработки файлов с расширением .css
-        //use: ['style-loader', 'css-loader'], // Загрузчики, используемые для обработки CSS-файлов
+        // test: /\.css$/, // Регулярное выражение для обработки файлов с расширением .css
+        // use: ['style-loader', 'css-loader'], // Загрузчики, используемые для обработки CSS-файлов
         test: /\.(sass|less|css)$/,
-        use: ["style-loader", "css-loader", 'sass-loader'],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
     ],
   },
-  
+
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',

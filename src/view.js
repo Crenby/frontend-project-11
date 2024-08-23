@@ -3,6 +3,57 @@ const feedback = document.querySelector(".feedback");
 const posts = document.querySelector(".posts");
 const feeds = document.querySelector(".feeds");
 
+const modalTitle = document.querySelector(".modal-title");
+const modalBody = document.querySelector(".modal-body");
+const btnClose = document.querySelector(".btn-close");
+const btnSecondary = document.querySelector(".btn-secondary");
+const modal = document.querySelector(".modal");
+const body = document.querySelector("body");
+
+function openModal(state) {
+  const title = document.querySelectorAll(".list-group-item");
+  const allPost = [state.upData, state.data.map((item) => item.items)].flat(Infinity);
+
+  title.forEach((item) => {
+    item.addEventListener("click", (e) => {
+      if (e.target.classList.contains('btn-outline-primary')) {
+        const title = item.querySelector("a");
+        const titleText = title.textContent;
+
+        title.classList.add("fw-normal", "link-secondary");
+        title.classList.remove("fw-bold");
+
+        const post = allPost.find(item => item.title === titleText);
+
+        modalTitle.textContent = post.title;
+        modalBody.textContent = post.description;
+        title.href = post.link;
+
+        modal.classList.add("show");
+        modal.style.cssText = `
+          display: block;
+          background-color: rgba(0,0,0,.5);
+        `;
+
+        body.style.cssText = `
+          overflow: hidden; 
+          padding-right: 17px;
+        `;
+
+        btnClose.addEventListener("click", () => {
+          modal.style.cssText = `display: none`;
+          body.style.cssText = ``;
+        });
+
+        btnSecondary.addEventListener("click", () => {
+          modal.style.cssText = `display: none`;
+          body.style.cssText = ``;
+        });
+      }
+    })
+  })
+}
+
 function renderFeeds(data) {
   feeds.innerHTML = '';
 
@@ -36,7 +87,7 @@ function renderFeeds(data) {
   feeds.append(div);
 }
 
-function renderPosts(data) {
+function renderPosts(data, state) {
   posts.innerHTML = '';
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
@@ -69,9 +120,10 @@ function renderPosts(data) {
 
   div.append(ul);
   posts.append(div);
+  openModal(state);
 }
 
-function upDataRender(item) {
+function upDataRender(item, state) {
   const ul = posts.querySelector("ul");
   const li = document.createElement('li');
 
@@ -82,6 +134,7 @@ function upDataRender(item) {
             `;
 
   ul.prepend(li);
+  openModal(state);
 }
 
 function view(state, path, value) {
@@ -104,9 +157,8 @@ function view(state, path, value) {
       feedback.classList.add('text-success');
       break;
     case 'data':
-      console.log(state.data);
       renderFeeds(state.data);
-      renderPosts(state.data);
+      renderPosts(state.data, state);
       break;
   }
 }

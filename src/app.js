@@ -59,7 +59,7 @@ export default function app() {
       axios.get(getFullUrl(fid))
         .then((response) => {
           const newData = parser(response);
-          const filtData = [[state.upData]].flat(Infinity);
+          const filtData = [[state.upData.map((item) => item.title)]].flat(Infinity);
   
           state.data.forEach((oldItem) => {
             oldItem.items.forEach((item) => {
@@ -69,10 +69,8 @@ export default function app() {
 
           newData.items.forEach((item) => {
             if (!filtData.includes(item.title)) {
-              upDataRender(item);
-              state.upData.push(item.title);
-              console.log(state.upData);
-              console.log(filtData);
+              state.upData.push(item);
+              upDataRender(item, state);
             }
           })
 
@@ -100,7 +98,6 @@ export default function app() {
 
     validate({ url: out }, state.fids)
       .then(() => {
-        console.log("good");
         axios.get(getFullUrl(out))
           .then((response) => {
             watchedState.fids.unshift(out);
@@ -124,7 +121,6 @@ export default function app() {
         elements.form.reset();
       })
       .catch((e) => {
-        console.log("nogood");
         watchedState.form.status = null;
         watchedState.form.validUrl = true;
         watchedState.form.errors = e.message;
