@@ -1,11 +1,11 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
-import { view } from './view.js';
-import { upDataRender } from './view.js';
 import i18next from 'i18next';
-import resources from './locales/index.js';
 import axios from 'axios';
-import parser from './parser.js';
+import { view, upDataRender } from './view';
+
+import resources from './locales/index';
+import parser from './parser';
 
 export default function app() {
   const state = {
@@ -26,12 +26,12 @@ export default function app() {
     debug: false,
     lng: defaultLang,
     resources,
-  })
+  });
 
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
-  }
+  };
 
   yup.setLocale({
     mixed: {
@@ -41,46 +41,18 @@ export default function app() {
     string: {
       url: i18n.t('errors.invalidUrl'),
     },
-  })
+  });
 
   function validate(fields, fids) {
     const schema = yup.object({
       url: yup.string().required().url().notOneOf(fids),
     });
     return schema.validate(fields);
-  };
+  }
 
   const watchedState = onChange(state, (path, value) => {
     view(state, path, value);
   });
-
-  function upData(state) {
-    state.fids.forEach((fid) => {
-      axios.get(getFullUrl(fid))
-        .then((response) => {
-          const newData = parser(response);
-          const filtData = [[state.upData.map((item) => item.title)]].flat(Infinity);
-  
-          state.data.forEach((oldItem) => {
-            oldItem.items.forEach((item) => {
-              filtData.push(item.title);
-            })
-          })
-
-          newData.items.forEach((item) => {
-            if (!filtData.includes(item.title)) {
-              state.upData.push(item);
-              upDataRender(item, state);
-            }
-          })
-
-          setTimeout(upData, 5000, state);
-        })
-        .catch((e) => {
-          console.log(e);
-        })
-    })
-  }
 
   const getFullUrl = (rssUrl) => {
     const url = new URL('/get', 'https://allorigins.hexlet.app');
@@ -89,6 +61,34 @@ export default function app() {
     searchParams.set('disableCache', 'true');
     return url.toString();
   };
+
+  function upData(state) {
+    state.fids.forEach((fid) => {
+      axios.get(getFullUrl(fid))
+        .then((response) => {
+          const newData = parser(response);
+          const filtData = [[state.upData.map((item) => item.title)]].flat(Infinity);
+
+          state.data.forEach((oldItem) => {
+            oldItem.items.forEach((item) => {
+              filtData.push(item.title);
+            });
+          });
+
+          newData.items.forEach((item) => {
+            if (!filtData.includes(item.title)) {
+              state.upData.push(item);
+              upDataRender(item, state);
+            }
+          });
+
+          setTimeout(upData, 5000, state);
+        })
+        .catch(() => {
+          
+        });
+    });
+  }
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -115,7 +115,7 @@ export default function app() {
             } else {
               watchedState.form.errors = i18n.t('errors.unknown');
             }
-          })
+          });
 
         elements.input.focus();
         elements.form.reset();
@@ -124,6 +124,6 @@ export default function app() {
         watchedState.form.status = null;
         watchedState.form.validUrl = true;
         watchedState.form.errors = e.message;
-      })
+      });
   });
 }

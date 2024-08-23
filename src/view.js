@@ -1,35 +1,35 @@
-const input = document.querySelector("#url-input");
-const feedback = document.querySelector(".feedback");
-const posts = document.querySelector(".posts");
-const feeds = document.querySelector(".feeds");
+const input = document.querySelector('#url-input');
+const feedback = document.querySelector('.feedback');
+const posts = document.querySelector('.posts');
+const feeds = document.querySelector('.feeds');
 
-const modalTitle = document.querySelector(".modal-title");
-const modalBody = document.querySelector(".modal-body");
-const btnClose = document.querySelector(".btn-close");
-const btnSecondary = document.querySelector(".btn-secondary");
-const modal = document.querySelector(".modal");
-const body = document.querySelector("body");
+const modalTitle = document.querySelector('.modal-title');
+const modalBody = document.querySelector('.modal-body');
+const btnClose = document.querySelector('.btn-close');
+const btnSecondary = document.querySelector('.btn-secondary');
+const modal = document.querySelector('.modal');
+const body = document.querySelector('body');
 
 function openModal(state) {
-  const title = document.querySelectorAll(".list-group-item");
+  const title = document.querySelectorAll('.list-group-item');
   const allPost = [state.upData, state.data.map((item) => item.items)].flat(Infinity);
 
   title.forEach((item) => {
-    item.addEventListener("click", (e) => {
+    item.addEventListener('click', (e) => {
       if (e.target.classList.contains('btn-outline-primary')) {
-        const title = item.querySelector("a");
-        const titleText = title.textContent;
+        const titleSelector = item.querySelector('a');
+        const titleText = titleSelector.textContent;
 
-        title.classList.add("fw-normal", "link-secondary");
-        title.classList.remove("fw-bold");
+        titleSelector.classList.add('fw-normal', 'link-secondary');
+        titleSelector.classList.remove('fw-bold');
 
-        const post = allPost.find(item => item.title === titleText);
+        const post = allPost.find((searchPost) => searchPost.title === titleText);
 
         modalTitle.textContent = post.title;
         modalBody.textContent = post.description;
-        title.href = post.link;
+        titleSelector.href = post.link;
 
-        modal.classList.add("show");
+        modal.classList.add('show');
         modal.style.cssText = `
           display: block;
           background-color: rgba(0,0,0,.5);
@@ -40,18 +40,18 @@ function openModal(state) {
           padding-right: 17px;
         `;
 
-        btnClose.addEventListener("click", () => {
-          modal.style.cssText = `display: none`;
-          body.style.cssText = ``;
+        btnClose.addEventListener('click', () => {
+          modal.style.cssText = 'display: none';
+          body.style.cssText = '';
         });
 
-        btnSecondary.addEventListener("click", () => {
-          modal.style.cssText = `display: none`;
-          body.style.cssText = ``;
+        btnSecondary.addEventListener('click', () => {
+          modal.style.cssText = 'display: none';
+          body.style.cssText = '';
         });
       }
-    })
-  })
+    });
+  });
 }
 
 function renderFeeds(data) {
@@ -81,7 +81,7 @@ function renderFeeds(data) {
       <p class="m-0 small text-black-50">${item.description}</p>
     `;
     ul.append(li);
-  })
+  });
 
   div.append(ul);
   feeds.append(div);
@@ -115,8 +115,8 @@ function renderPosts(data, state) {
         <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
       `;
       ul.append(li);
-    })
-  })
+    });
+  });
 
   div.append(ul);
   posts.append(div);
@@ -124,7 +124,7 @@ function renderPosts(data, state) {
 }
 
 function upDataRender(item, state) {
-  const ul = posts.querySelector("ul");
+  const ul = posts.querySelector('ul');
   const li = document.createElement('li');
 
   li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -159,6 +159,8 @@ function view(state, path, value) {
     case 'data':
       renderFeeds(state.data);
       renderPosts(state.data, state);
+      break;
+    default:
       break;
   }
 }
