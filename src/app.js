@@ -62,14 +62,14 @@ export default function app() {
     return url.toString();
   };
 
-  function upData(state) {
-    state.fids.forEach((fid) => {
+  function upData(stateData) {
+    stateData.fids.forEach((fid) => {
       axios.get(getFullUrl(fid))
         .then((response) => {
           const newData = parser(response);
-          const filtData = [[state.upData.map((item) => item.title)]].flat(Infinity);
+          const filtData = [[stateData.upData.map((item) => item.title)]].flat(Infinity);
 
-          state.data.forEach((oldItem) => {
+          stateData.data.forEach((oldItem) => {
             oldItem.items.forEach((item) => {
               filtData.push(item.title);
             });
@@ -77,16 +77,14 @@ export default function app() {
 
           newData.items.forEach((item) => {
             if (!filtData.includes(item.title)) {
-              state.upData.push(item);
-              upDataRender(item, state);
+              stateData.upData.push(item);
+              upDataRender(item, stateData);
             }
           });
 
-          setTimeout(upData, 5000, state);
+          setTimeout(upData, 5000, stateData);
         })
-        .catch(() => {
-          
-        });
+        .catch();
     });
   }
 
@@ -107,10 +105,10 @@ export default function app() {
             watchedState.form.status = i18n.t('errors.validUrl');
             upData(state);
           })
-          .catch((e) => {
-            if (e.isParsingError) {
+          .catch((error) => {
+            if (error.isParsingError) {
               watchedState.form.errors = i18n.t('errors.invalidRss');
-            } else if (e.message === 'Network Error') {
+            } else if (error.message === 'Network Error') {
               watchedState.form.errors = i18n.t('errors.network');
             } else {
               watchedState.form.errors = i18n.t('errors.unknown');
@@ -120,10 +118,10 @@ export default function app() {
         elements.input.focus();
         elements.form.reset();
       })
-      .catch((e) => {
+      .catch((errorValidation) => {
         watchedState.form.status = null;
         watchedState.form.validUrl = true;
-        watchedState.form.errors = e.message;
+        watchedState.form.errors = errorValidation.message;
       });
   });
 }
