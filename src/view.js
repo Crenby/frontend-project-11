@@ -1,61 +1,5 @@
-const input = document.querySelector('#url-input');
-const feedback = document.querySelector('.feedback');
-const posts = document.querySelector('.posts');
-const feeds = document.querySelector('.feeds');
-
-const modalTitle = document.querySelector('.modal-title');
-const modalBody = document.querySelector('.modal-body');
-const btnClose = document.querySelector('.btn-close');
-const btnSecondary = document.querySelector('.btn-secondary');
-const modal = document.querySelector('.modal');
-const body = document.querySelector('body');
-
-function openModal(state) {
-  const title = document.querySelectorAll('.list-group-item');
-  const allPost = [state.upData, state.data.map((item) => item.items)].flat(Infinity);
-
-  title.forEach((item) => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-outline-primary')) {
-        const titleSelector = item.querySelector('a');
-        const titleText = titleSelector.textContent;
-
-        titleSelector.classList.add('fw-normal', 'link-secondary');
-        titleSelector.classList.remove('fw-bold');
-
-        const post = allPost.find((searchPost) => searchPost.title === titleText);
-
-        modalTitle.textContent = post.title;
-        modalBody.textContent = post.description;
-        titleSelector.href = post.link;
-
-        modal.classList.add('show');
-        modal.style.cssText = `
-          display: block;
-          background-color: rgba(0,0,0,.5);
-        `;
-
-        body.style.cssText = `
-          overflow: hidden; 
-          padding-right: 17px;
-        `;
-
-        btnClose.addEventListener('click', () => {
-          modal.style.cssText = 'display: none';
-          body.style.cssText = '';
-        });
-
-        btnSecondary.addEventListener('click', () => {
-          modal.style.cssText = 'display: none';
-          body.style.cssText = '';
-        });
-      }
-    });
-  });
-}
-
-function renderFeeds(data) {
-  feeds.innerHTML = '';
+function renderFeeds(state) {
+  state.selector.feeds.innerHTML = '';
 
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
@@ -73,22 +17,22 @@ function renderFeeds(data) {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  data.forEach((item) => {
+  state.data.title.forEach((item, i) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
     li.innerHTML = `
-      <h3 class="h6 m-0">${item.title}</h3>
-      <p class="m-0 small text-black-50">${item.description}</p>
+      <h3 class="h6 m-0">${item}</h3>
+      <p class="m-0 small text-black-50">${state.data.description[i]}</p>
     `;
     ul.append(li);
   });
 
   div.append(ul);
-  feeds.append(div);
+  state.selector.feeds.append(div);
 }
 
-function renderPosts(data, state) {
-  posts.innerHTML = '';
+function renderPosts(state) {
+  state.selector.posts.innerHTML = '';
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
 
@@ -105,64 +49,63 @@ function renderPosts(data, state) {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  data.forEach((item) => {
-    item.items.forEach((post) => {
-      const li = document.createElement('li');
-      li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+  state.data.items.flat(Infinity).forEach((item) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
-      li.innerHTML = `
-        <a href="${post.link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${post.title}</a>
+    li.innerHTML = `
+        <a href="${item.link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${item.title}</a>
         <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
       `;
-      ul.append(li);
-    });
+    ul.append(li);
   });
 
   div.append(ul);
-  posts.append(div);
-  openModal(state);
+  state.selector.posts.append(div);
 }
 
-function upDataRender(item, state) {
-  const ul = posts.querySelector('ul');
+function upDataRender(state) {
+  const ul = state.selector.posts.querySelector('ul');
   const li = document.createElement('li');
 
   li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
   li.innerHTML = `
-              <a href="${item.link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${item.title}</a>
+              <a href="${state.data.items[0].link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${state.data.items[0].title}</a>
               <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
             `;
 
   ul.prepend(li);
-  openModal(state);
 }
 
 function view(state, path, value) {
   switch (path) {
     case 'form.validUrl':
       if (value) {
-        input.classList.add('is-invalid');
+        state.selector.input.classList.add('is-invalid');
       } else {
-        input.classList.remove('is-invalid');
+        state.selector.input.classList.remove('is-invalid');
       }
       break;
     case 'form.errors':
-      feedback.textContent = value;
-      feedback.classList.add('text-danger');
-      feedback.classList.remove('text-success');
+      state.selector.feedback.textContent = value;
+      state.selector.feedback.classList.add('text-danger');
+      state.selector.feedback.classList.remove('text-success');
       break;
     case 'form.status':
-      feedback.textContent = value;
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
+      state.selector.feedback.textContent = value;
+      state.selector.feedback.classList.remove('text-danger');
+      state.selector.feedback.classList.add('text-success');
       break;
-    case 'data':
-      renderFeeds(state.data);
-      renderPosts(state.data, state);
+    case 'data.description':
+      renderFeeds(state);
+      renderPosts(state);
+      break;
+    case 'data.items':
+      upDataRender(state);
       break;
     default:
       break;
   }
 }
 
-export { view, upDataRender };
+export default view;
