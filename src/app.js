@@ -134,7 +134,7 @@ export default function app() {
           console.error(error);
         });
     });
-    
+
     Promise.all([promise])
       .then(() => setTimeout(upData, 5000, stateData));
   }
