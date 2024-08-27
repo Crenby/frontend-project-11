@@ -75,7 +75,7 @@ export default function app() {
 
   function upDatePosts(stateData) {
     const promise = stateData.fids.map((fid) => {
-      axios.get(getFullUrl(fid))
+      return axios.get(getFullUrl(fid))
         .then((response) => {
           const parse = new DOMParser();
           const data = parse.parseFromString(response.data.contents, 'text/xml');

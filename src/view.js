@@ -31,6 +31,40 @@ function renderFeeds(state, selectors) {
   selectors.feeds.append(div);
 }
 
+function openModal(state, selectors) {
+  const title = document.querySelectorAll('.list-group-item');
+  const allPost = [state.data.items].flat(Infinity);
+
+  title.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('btn-outline-primary')) {
+        const titleSelector = item.querySelector('a');
+        const titleText = titleSelector.textContent;
+
+        titleSelector.classList.add('fw-normal', 'link-secondary');
+        titleSelector.classList.remove('fw-bold');
+
+        const post = allPost.find((searchPost) => searchPost.title === titleText);
+
+        selectors.modalTitle.textContent = post.title;
+        selectors.modalBody.textContent = post.description;
+        titleSelector.href = post.link;
+
+        selectors.modal.classList.add('show');
+        selectors.modal.style.cssText = `
+          display: block;
+          background-color: rgba(0,0,0,.5);
+        `;
+
+        selectors.body.style.cssText = `
+          overflow: hidden; 
+          padding-right: 17px;
+        `;
+      }
+    });
+  });
+}
+
 function renderPosts(state, selectors) {
   selectors.posts.innerHTML = '';
   const div = document.createElement('div');
@@ -77,40 +111,6 @@ function upDataRender(state, selectors) {
 
   ul.prepend(li);
   openModal(state, selectors);
-}
-
-function openModal(state, selectors) {
-  const title = document.querySelectorAll('.list-group-item');
-  const allPost = [state.data.items].flat(Infinity);
-
-  title.forEach((item) => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-outline-primary')) {
-        const titleSelector = item.querySelector('a');
-        const titleText = titleSelector.textContent;
-
-        titleSelector.classList.add('fw-normal', 'link-secondary');
-        titleSelector.classList.remove('fw-bold');
-
-        const post = allPost.find((searchPost) => searchPost.title === titleText);
-
-        selectors.modalTitle.textContent = post.title;
-        selectors.modalBody.textContent = post.description;
-        titleSelector.href = post.link;
-
-        selectors.modal.classList.add('show');
-        selectors.modal.style.cssText = `
-          display: block;
-          background-color: rgba(0,0,0,.5);
-        `;
-
-        selectors.body.style.cssText = `
-          overflow: hidden; 
-          padding-right: 17px;
-        `;
-      }
-    });
-  });
 }
 
 function view(state, path, value, selectors) {
