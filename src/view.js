@@ -1,5 +1,5 @@
-function renderFeeds(state) {
-  state.selector.feeds.innerHTML = '';
+function renderFeeds(state, selectors) {
+  selectors.feeds.innerHTML = '';
 
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
@@ -28,11 +28,11 @@ function renderFeeds(state) {
   });
 
   div.append(ul);
-  state.selector.feeds.append(div);
+  selectors.feeds.append(div);
 }
 
-function renderPosts(state) {
-  state.selector.posts.innerHTML = '';
+function renderPosts(state, selectors) {
+  selectors.posts.innerHTML = '';
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
 
@@ -61,11 +61,12 @@ function renderPosts(state) {
   });
 
   div.append(ul);
-  state.selector.posts.append(div);
+  selectors.posts.append(div);
+  openModal(state, selectors);
 }
 
-function upDataRender(state) {
-  const ul = state.selector.posts.querySelector('ul');
+function upDataRender(state, selectors) {
+  const ul = selectors.posts.querySelector('ul');
   const li = document.createElement('li');
 
   li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -75,33 +76,68 @@ function upDataRender(state) {
             `;
 
   ul.prepend(li);
+  openModal(state, selectors);
 }
 
-function view(state, path, value) {
+function openModal(state, selectors) {
+  const title = document.querySelectorAll('.list-group-item');
+  const allPost = [state.data.items].flat(Infinity);
+
+  title.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('btn-outline-primary')) {
+        const titleSelector = item.querySelector('a');
+        const titleText = titleSelector.textContent;
+
+        titleSelector.classList.add('fw-normal', 'link-secondary');
+        titleSelector.classList.remove('fw-bold');
+
+        const post = allPost.find((searchPost) => searchPost.title === titleText);
+
+        selectors.modalTitle.textContent = post.title;
+        selectors.modalBody.textContent = post.description;
+        titleSelector.href = post.link;
+
+        selectors.modal.classList.add('show');
+        selectors.modal.style.cssText = `
+          display: block;
+          background-color: rgba(0,0,0,.5);
+        `;
+
+        selectors.body.style.cssText = `
+          overflow: hidden; 
+          padding-right: 17px;
+        `;
+      }
+    });
+  });
+}
+
+function view(state, path, value, selectors) {
   switch (path) {
     case 'form.validUrl':
       if (value) {
-        state.selector.input.classList.add('is-invalid');
+        selectors.input.classList.add('is-invalid');
       } else {
-        state.selector.input.classList.remove('is-invalid');
+        selectors.input.classList.remove('is-invalid');
       }
       break;
     case 'form.errors':
-      state.selector.feedback.textContent = value;
-      state.selector.feedback.classList.add('text-danger');
-      state.selector.feedback.classList.remove('text-success');
+      selectors.feedback.textContent = value;
+      selectors.feedback.classList.add('text-danger');
+      selectors.feedback.classList.remove('text-success');
       break;
     case 'form.status':
-      state.selector.feedback.textContent = value;
-      state.selector.feedback.classList.remove('text-danger');
-      state.selector.feedback.classList.add('text-success');
+      selectors.feedback.textContent = value;
+      selectors.feedback.classList.remove('text-danger');
+      selectors.feedback.classList.add('text-success');
       break;
     case 'data.description':
-      renderFeeds(state);
-      renderPosts(state);
+      renderFeeds(state, selectors);
+      renderPosts(state, selectors);
       break;
     case 'data.items':
-      upDataRender(state);
+      upDataRender(state, selectors);
       break;
     default:
       break;

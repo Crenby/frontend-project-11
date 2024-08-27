@@ -6,50 +6,6 @@ import view from './view';
 import resources from './locales/index';
 import parser from './parser';
 
-function openModal(state) {
-  const title = document.querySelectorAll('.list-group-item');
-  const allPost = [state.data.items].flat(Infinity);
-
-  title.forEach((item) => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-outline-primary')) {
-        const titleSelector = item.querySelector('a');
-        const titleText = titleSelector.textContent;
-
-        titleSelector.classList.add('fw-normal', 'link-secondary');
-        titleSelector.classList.remove('fw-bold');
-
-        const post = allPost.find((searchPost) => searchPost.title === titleText);
-
-        state.selector.modalTitle.textContent = post.title;
-        state.selector.modalBody.textContent = post.description;
-        titleSelector.href = post.link;
-
-        state.selector.modal.classList.add('show');
-        state.selector.modal.style.cssText = `
-          display: block;
-          background-color: rgba(0,0,0,.5);
-        `;
-
-        state.selector.body.style.cssText = `
-          overflow: hidden; 
-          padding-right: 17px;
-        `;
-
-        state.selector.btnClose.addEventListener('click', () => {
-          state.selector.modal.style.cssText = 'display: none';
-          state.selector.body.style.cssText = '';
-        });
-
-        state.selector.btnSecondary.addEventListener('click', () => {
-          state.selector.modal.style.cssText = 'display: none';
-          state.selector.body.style.cssText = '';
-        });
-      }
-    });
-  });
-}
-
 export default function app() {
   const state = {
     form: {
@@ -57,25 +13,26 @@ export default function app() {
       validUrl: false,
       errors: null,
     },
-    selector: {
-      form: document.querySelector('.rss-form'),
-      input: document.querySelector('#url-input'),
-      feedback: document.querySelector('.feedback'),
-      posts: document.querySelector('.posts'),
-      feeds: document.querySelector('.feeds'),
-      modalTitle: document.querySelector('.modal-title'),
-      modalBody: document.querySelector('.modal-body'),
-      btnClose: document.querySelector('.btn-close'),
-      btnSecondary: document.querySelector('.btn-secondary'),
-      modal: document.querySelector('.modal'),
-      body: document.querySelector('body'),
-    },
     fids: [],
     data: {
       title: [],
       description: [],
       items: [],
     },
+  };
+
+  const selectors = {
+    form: document.querySelector('.rss-form'),
+    input: document.querySelector('#url-input'),
+    feedback: document.querySelector('.feedback'),
+    posts: document.querySelector('.posts'),
+    feeds: document.querySelector('.feeds'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    btnClose: document.querySelector('.btn-close'),
+    btnSecondary: document.querySelector('.btn-secondary'),
+    modal: document.querySelector('.modal'),
+    body: document.querySelector('body'),
   };
 
   const defaultLang = 'ru';
@@ -105,7 +62,7 @@ export default function app() {
   }
 
   const watchedState = onChange(state, (path, value) => {
-    view(state, path, value);
+    view(state, path, value, selectors);
   });
 
   const getFullUrl = (rssUrl) => {
@@ -116,11 +73,14 @@ export default function app() {
     return url.toString();
   };
 
-  function upData(stateData) {
-    const promise = stateData.fids.forEach((fid) => {
+  function upDatePosts(stateData) {
+    const promise = stateData.fids.map((fid) => {
       axios.get(getFullUrl(fid))
         .then((response) => {
-          const newData = parser(response);
+          const parse = new DOMParser();
+          const data = parse.parseFromString(response.data.contents, 'text/xml');
+
+          const newData = parser(data);
           const filtData = [stateData.data.items].flat(Infinity).map((item) => item.title);
 
           newData.items.forEach((item) => {
@@ -128,7 +88,6 @@ export default function app() {
               watchedState.data.items.unshift(item);
             }
           });
-          openModal(state);
         })
         .catch((error) => {
           console.error(error);
@@ -136,10 +95,12 @@ export default function app() {
     });
 
     Promise.all([promise])
-      .then(() => setTimeout(upData, 5000, stateData));
+      .then(() => setTimeout(upDatePosts, 5000, stateData));
   }
 
-  state.selector.form.addEventListener('submit', (e) => {
+  upDatePosts(state);
+
+  selectors.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
@@ -152,13 +113,13 @@ export default function app() {
             watchedState.fids.unshift(out);
             watchedState.form.validUrl = false;
             watchedState.form.errors = null;
-            const parseData = parser(response);
+            const parse = new DOMParser();
+            const data = parse.parseFromString(response.data.contents, 'text/xml');
+            const parseData = parser(data);
             watchedState.data.title.unshift(parseData.title);
             state.data.items.unshift(parseData.items);
             watchedState.data.description.unshift(parseData.description);
             watchedState.form.status = i18n.t('errors.validUrl');
-            openModal(state);
-            upData(state);
           })
           .catch((error) => {
             if (error.isParsingError) {
@@ -171,13 +132,23 @@ export default function app() {
             }
           });
 
-        state.selector.input.focus();
-        state.selector.form.reset();
+        selectors.input.focus();
+        selectors.form.reset();
       })
       .catch((errorValidation) => {
         watchedState.form.status = null;
         watchedState.form.validUrl = true;
         watchedState.form.errors = errorValidation.message;
       });
+  });
+
+  selectors.btnClose.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
+  });
+
+  selectors.btnSecondary.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
   });
 }
