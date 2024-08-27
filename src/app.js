@@ -74,25 +74,23 @@ export default function app() {
   };
 
   function upDatePosts(stateData) {
-    const promise = stateData.fids.map((fid) => {
-      return axios.get(getFullUrl(fid))
-        .then((response) => {
-          const parse = new DOMParser();
-          const data = parse.parseFromString(response.data.contents, 'text/xml');
+    const promise = stateData.fids.map((fid) => axios.get(getFullUrl(fid))
+      .then((response) => {
+        const parse = new DOMParser();
+        const data = parse.parseFromString(response.data.contents, 'text/xml');
 
-          const newData = parser(data);
-          const filtData = [stateData.data.items].flat(Infinity).map((item) => item.title);
+        const newData = parser(data);
+        const filtData = [stateData.data.items].flat(Infinity).map((item) => item.title);
 
-          newData.items.forEach((item) => {
-            if (!filtData.includes(item.title)) {
-              watchedState.data.items.unshift(item);
-            }
-          });
-        })
-        .catch((error) => {
-          console.error(error);
+        newData.items.forEach((item) => {
+          if (!filtData.includes(item.title)) {
+            watchedState.data.items.unshift(item);
+          }
         });
-    });
+      })
+      .catch((error) => {
+        console.error(error);
+      }));
 
     Promise.all([promise])
       .then(() => setTimeout(upDatePosts, 5000, stateData));
