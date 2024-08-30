@@ -2,9 +2,9 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
-import view from './view';
-import resources from './locales/index';
-import parser from './parser';
+import view from './view.js';
+import resources from './locales/index.js';
+import parser from './parser.js';
 
 export default function app() {
   const state = {
@@ -105,7 +105,11 @@ export default function app() {
             watchedState.form.errors = null;
             const parseData = parser(response.data.contents);
             state.posts.unshift(parseData.items);
-            watchedState.feeds.unshift({ title: parseData.title, description: parseData.description, url: out });
+            watchedState.feeds.unshift({ 
+              title: parseData.title, 
+              description: parseData.description, 
+              url: out 
+            });
             watchedState.form.status = i18n.t('errors.validUrl');
           })
           .catch((error) => {
