@@ -17,12 +17,12 @@ function renderFeeds(state, selectors) {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  state.data.title.forEach((item, i) => {
+  state.feeds.forEach((item) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
     li.innerHTML = `
-      <h3 class="h6 m-0">${item}</h3>
-      <p class="m-0 small text-black-50">${state.data.description[i]}</p>
+      <h3 class="h6 m-0">${item.title}</h3>
+      <p class="m-0 small text-black-50">${item.description}</p>
     `;
     ul.append(li);
   });
@@ -33,7 +33,7 @@ function renderFeeds(state, selectors) {
 
 function openModal(state, selectors) {
   const title = document.querySelectorAll('.list-group-item');
-  const allPost = [state.data.items].flat(Infinity);
+  const allPost = [state.posts].flat(Infinity);
 
   title.forEach((item) => {
     item.addEventListener('click', (e) => {
@@ -63,6 +63,16 @@ function openModal(state, selectors) {
       }
     });
   });
+
+  selectors.btnClose.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
+  });
+
+  selectors.btnSecondary.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
+  });
 }
 
 function renderPosts(state, selectors) {
@@ -83,7 +93,7 @@ function renderPosts(state, selectors) {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  state.data.items.flat(Infinity).forEach((item) => {
+  state.posts.flat(Infinity).forEach((item) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
@@ -105,7 +115,7 @@ function upDataRender(state, selectors) {
 
   li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
   li.innerHTML = `
-              <a href="${state.data.items[0].link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${state.data.items[0].title}</a>
+              <a href="${state.posts[0].link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${state.posts[0].title}</a>
               <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
             `;
 
@@ -132,11 +142,11 @@ function view(state, path, value, selectors) {
       selectors.feedback.classList.remove('text-danger');
       selectors.feedback.classList.add('text-success');
       break;
-    case 'data.description':
+    case 'feeds':
       renderFeeds(state, selectors);
       renderPosts(state, selectors);
       break;
-    case 'data.items':
+    case 'posts':
       upDataRender(state, selectors);
       break;
     default:

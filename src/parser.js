@@ -1,4 +1,6 @@
-export default function parser(data) {
+export default function parser(ParseData) {
+  const parse = new DOMParser();
+  const data = parse.parseFromString(ParseData, 'text/xml');
   const errorNode = data.querySelector('parsererror');
 
   if (errorNode) {

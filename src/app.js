@@ -13,12 +13,8 @@ export default function app() {
       validUrl: false,
       errors: null,
     },
-    fids: [],
-    data: {
-      title: [],
-      description: [],
-      items: [],
-    },
+    feeds: [],
+    posts: [],
   };
 
   const selectors = {
@@ -54,9 +50,9 @@ export default function app() {
     },
   });
 
-  function validate(fields, fids) {
+  function validate(fields, feeds) {
     const schema = yup.object({
-      url: yup.string().required().url().notOneOf(fids),
+      url: yup.string().required().url().notOneOf(feeds),
     });
     return schema.validate(fields);
   }
@@ -73,18 +69,15 @@ export default function app() {
     return url.toString();
   };
 
-  function upDatePosts(stateData) {
-    const promise = stateData.fids.map((fid) => axios.get(getFullUrl(fid))
+  function upDatingPosts(stateData) {
+    const promise = stateData.feeds.map((fid) => axios.get(getFullUrl(fid.url))
       .then((response) => {
-        const parse = new DOMParser();
-        const data = parse.parseFromString(response.data.contents, 'text/xml');
-
-        const newData = parser(data);
-        const filtData = [stateData.data.items].flat(Infinity).map((item) => item.title);
+        const newData = parser(response.data.contents);
+        const filtData = stateData.posts.flat(Infinity).map((item) => item.title);
 
         newData.items.forEach((item) => {
           if (!filtData.includes(item.title)) {
-            watchedState.data.items.unshift(item);
+            watchedState.posts.unshift(item);
           }
         });
       })
@@ -93,10 +86,10 @@ export default function app() {
       }));
 
     Promise.all([promise])
-      .then(() => setTimeout(upDatePosts, 5000, stateData));
+      .then(() => setTimeout(upDatingPosts, 5000, stateData));
   }
 
-  upDatePosts(state);
+  upDatingPosts(state);
 
   selectors.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -104,24 +97,19 @@ export default function app() {
     const formData = new FormData(e.target);
     const out = formData.get('url');
 
-    validate({ url: out }, state.fids)
+    validate({ url: out }, state.feeds.map((item) => item.url))
       .then(() => {
         axios.get(getFullUrl(out))
           .then((response) => {
-            watchedState.fids.unshift(out);
             watchedState.form.validUrl = false;
             watchedState.form.errors = null;
-            const parse = new DOMParser();
-            const data = parse.parseFromString(response.data.contents, 'text/xml');
-            const parseData = parser(data);
-            watchedState.data.title.unshift(parseData.title);
-            state.data.items.unshift(parseData.items);
-            watchedState.data.description.unshift(parseData.description);
+            const parseData = parser(response.data.contents);
+            state.posts.unshift(parseData.items);
+            watchedState.feeds.unshift({ title: parseData.title, description: parseData.description, url: out });
             watchedState.form.status = i18n.t('errors.validUrl');
           })
           .catch((error) => {
             if (error.isParsingError) {
-              state.fids.shift();
               watchedState.form.errors = i18n.t('errors.invalidRss');
             } else if (error.message === 'Network Error') {
               watchedState.form.errors = i18n.t('errors.network');
@@ -138,15 +126,5 @@ export default function app() {
         watchedState.form.validUrl = true;
         watchedState.form.errors = errorValidation.message;
       });
-  });
-
-  selectors.btnClose.addEventListener('click', () => {
-    selectors.modal.style.cssText = 'display: none';
-    selectors.body.style.cssText = '';
-  });
-
-  selectors.btnSecondary.addEventListener('click', () => {
-    selectors.modal.style.cssText = 'display: none';
-    selectors.body.style.cssText = '';
   });
 }
