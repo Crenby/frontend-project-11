@@ -105,10 +105,10 @@ export default function app() {
             watchedState.form.errors = null;
             const parseData = parser(response.data.contents);
             state.posts.unshift(parseData.items);
-            watchedState.feeds.unshift({ 
-              title: parseData.title, 
-              description: parseData.description, 
-              url: out 
+            watchedState.feeds.unshift({
+              title: parseData.title,
+              description: parseData.description,
+              url: out,
             });
             watchedState.form.status = i18n.t('errors.validUrl');
           })
