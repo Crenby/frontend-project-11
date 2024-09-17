@@ -1,5 +1,6 @@
 function renderFeeds(state, selectors) {
-  selectors.feeds.innerHTML = '';
+  const renderDiv = selectors.feeds;
+  renderDiv.innerHTML = '';
 
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
@@ -32,6 +33,11 @@ function renderFeeds(state, selectors) {
 }
 
 function openModal(state, selectors) {
+  const { modalTitle } = selectors;
+  const { modalBody } = selectors;
+  const { modal } = selectors;
+  const { body } = selectors;
+
   const title = document.querySelectorAll('.list-group-item');
   const allPost = [state.posts].flat(Infinity);
 
@@ -46,17 +52,17 @@ function openModal(state, selectors) {
 
         const post = allPost.find((searchPost) => searchPost.title === titleText);
 
-        selectors.modalTitle.textContent = post.title;
-        selectors.modalBody.textContent = post.description;
+        modalTitle.textContent = post.title;
+        modalBody.textContent = post.description;
         titleSelector.href = post.link;
 
-        selectors.modal.classList.add('show');
-        selectors.modal.style.cssText = `
+        modal.classList.add('show');
+        modal.style.cssText = `
           display: block;
           background-color: rgba(0,0,0,.5);
         `;
 
-        selectors.body.style.cssText = `
+        body.style.cssText = ` 
           overflow: hidden; 
           padding-right: 17px;
         `;
@@ -65,18 +71,19 @@ function openModal(state, selectors) {
   });
 
   selectors.btnClose.addEventListener('click', () => {
-    selectors.modal.style.cssText = 'display: none';
-    selectors.body.style.cssText = '';
+    modal.style.cssText = 'display: none';
+    body.style.cssText = '';
   });
 
   selectors.btnSecondary.addEventListener('click', () => {
-    selectors.modal.style.cssText = 'display: none';
-    selectors.body.style.cssText = '';
+    modal.style.cssText = 'display: none';
+    body.style.cssText = '';
   });
 }
 
 function renderPosts(state, selectors) {
-  selectors.posts.innerHTML = '';
+  const { posts } = selectors;
+  posts.innerHTML = '';
   const div = document.createElement('div');
   div.classList.add('card', 'border-0');
 
@@ -124,6 +131,7 @@ function upDataRender(state, selectors) {
 }
 
 function view(state, path, value, selectors) {
+  const { feedback } = selectors;
   switch (path) {
     case 'form.validUrl':
       if (value) {
@@ -133,14 +141,14 @@ function view(state, path, value, selectors) {
       }
       break;
     case 'form.errors':
-      selectors.feedback.textContent = value;
-      selectors.feedback.classList.add('text-danger');
-      selectors.feedback.classList.remove('text-success');
+      feedback.textContent = value;
+      feedback.classList.add('text-danger');
+      feedback.classList.remove('text-success');
       break;
     case 'form.status':
-      selectors.feedback.textContent = value;
-      selectors.feedback.classList.remove('text-danger');
-      selectors.feedback.classList.add('text-success');
+      feedback.textContent = value;
+      feedback.classList.remove('text-danger');
+      feedback.classList.add('text-success');
       break;
     case 'feeds':
       renderFeeds(state, selectors);
