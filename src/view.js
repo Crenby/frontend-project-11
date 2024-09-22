@@ -1,4 +1,4 @@
-function renderFeeds(state, selectors) {
+function renderFeeds(state, selectors, i18n) {
   const renderDiv = selectors.feeds;
   renderDiv.innerHTML = '';
 
@@ -10,7 +10,7 @@ function renderFeeds(state, selectors) {
 
   const h2 = document.createElement('h2');
   h2.classList.add('card-title', 'h4');
-  h2.textContent = 'Фиды';
+  h2.textContent = i18n.t('text.feeds');
   insDiv.append(h2);
 
   div.append(insDiv);
@@ -21,10 +21,17 @@ function renderFeeds(state, selectors) {
   state.feeds.forEach((item) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
-    li.innerHTML = `
-      <h3 class="h6 m-0">${item.title}</h3>
-      <p class="m-0 small text-black-50">${item.description}</p>
-    `;
+
+    const h3 = document.createElement('h3');
+    h3.classList.add('h6', 'm-0');
+    h3.textContent = item.title;
+
+    const p = document.createElement('p');
+    p.classList.add('m-0', 'small', 'text-black-50');
+    p.textContent = item.description;
+
+    li.append(h3);
+    li.append(p);
     ul.append(li);
   });
 
@@ -32,56 +39,7 @@ function renderFeeds(state, selectors) {
   selectors.feeds.append(div);
 }
 
-function openModal(state, selectors) {
-  const { modalTitle } = selectors;
-  const { modalBody } = selectors;
-  const { modal } = selectors;
-  const { body } = selectors;
-
-  const title = document.querySelectorAll('.list-group-item');
-  const allPost = [state.posts].flat(Infinity);
-
-  title.forEach((item) => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-outline-primary')) {
-        const titleSelector = item.querySelector('a');
-        const titleText = titleSelector.textContent;
-
-        titleSelector.classList.add('fw-normal', 'link-secondary');
-        titleSelector.classList.remove('fw-bold');
-
-        const post = allPost.find((searchPost) => searchPost.title === titleText);
-
-        modalTitle.textContent = post.title;
-        modalBody.textContent = post.description;
-        titleSelector.href = post.link;
-
-        modal.classList.add('show');
-        modal.style.cssText = `
-          display: block;
-          background-color: rgba(0,0,0,.5);
-        `;
-
-        body.style.cssText = ` 
-          overflow: hidden; 
-          padding-right: 17px;
-        `;
-      }
-    });
-  });
-
-  selectors.btnClose.addEventListener('click', () => {
-    modal.style.cssText = 'display: none';
-    body.style.cssText = '';
-  });
-
-  selectors.btnSecondary.addEventListener('click', () => {
-    modal.style.cssText = 'display: none';
-    body.style.cssText = '';
-  });
-}
-
-function renderPosts(state, selectors) {
+function renderPosts(state, selectors, i18n) {
   const { posts } = selectors;
   posts.innerHTML = '';
   const div = document.createElement('div');
@@ -92,7 +50,7 @@ function renderPosts(state, selectors) {
 
   const h2 = document.createElement('h2');
   h2.classList.add('card-title', 'h4');
-  h2.textContent = 'Посты';
+  h2.textContent = i18n.t('text.posts');
   insDiv.append(h2);
 
   div.append(insDiv);
@@ -104,33 +62,45 @@ function renderPosts(state, selectors) {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
-    li.innerHTML = `
-        <a href="${item.link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${item.title}</a>
-        <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
-      `;
+    const a = document.createElement('a');
+    a.href = item.link;
+    a.classList.add('fw-bold');
+    a.textContent = item.title;
+
+    const button = document.createElement('button');
+    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    button.textContent = i18n.t('text.button');
+
+    li.append(a);
+    li.append(button);
     ul.append(li);
   });
 
   div.append(ul);
   selectors.posts.append(div);
-  openModal(state, selectors);
 }
 
-function upDataRender(state, selectors) {
+function upDataRender(state, selectors, i18n) {
   const ul = selectors.posts.querySelector('ul');
   const li = document.createElement('li');
 
   li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-  li.innerHTML = `
-              <a href="${state.posts[0].link}" class="fw-bold" data-id="137" target="_blank" rel="noopener noreferrer">${state.posts[0].title}</a>
-              <button type="button" class="btn btn-outline-primary btn-sm" data-id="137" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>
-            `;
 
+  const a = document.createElement('a');
+  a.href = state.posts[0].link;
+  a.classList.add('fw-bold');
+  a.textContent = state.posts[0].title;
+
+  const button = document.createElement('button');
+  button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+  button.textContent = i18n.t('text.button');
+
+  li.append(a);
+  li.append(button);
   ul.prepend(li);
-  openModal(state, selectors);
 }
 
-function view(state, path, value, selectors) {
+function view(state, path, value, selectors, i18n) {
   const { feedback } = selectors;
   switch (path) {
     case 'form.validUrl':
@@ -151,11 +121,11 @@ function view(state, path, value, selectors) {
       feedback.classList.add('text-success');
       break;
     case 'feeds':
-      renderFeeds(state, selectors);
-      renderPosts(state, selectors);
+      renderFeeds(state, selectors, i18n);
+      renderPosts(state, selectors, i18n);
       break;
     case 'posts':
-      upDataRender(state, selectors);
+      upDataRender(state, selectors, i18n);
       break;
     default:
       break;

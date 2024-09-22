@@ -58,7 +58,7 @@ export default function app() {
   }
 
   const watchedState = onChange(state, (path, value) => {
-    view(state, path, value, selectors);
+    view(state, path, value, selectors, i18n);
   });
 
   const getFullUrl = (rssUrl) => {
@@ -89,7 +89,8 @@ export default function app() {
       .then(() => setTimeout(upDatingPosts, 5000, stateData));
   }
 
-  upDatingPosts(state);
+  // upDatingPosts(state);
+  upDatingPosts(watchedState);
 
   selectors.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -111,6 +112,37 @@ export default function app() {
               url: out,
             });
             watchedState.form.status = i18n.t('errors.validUrl');
+
+            const title = document.querySelector('.list-group');
+
+            title.addEventListener('click', (event) => {
+              const { target } = event;
+              if (target.tagName === 'BUTTON') {
+                const allPost = [state.posts].flat(Infinity);
+                const titleSelector = target.parentNode.querySelector('a');
+                const titleText = titleSelector.textContent;
+
+                titleSelector.classList.add('fw-normal', 'link-secondary');
+                titleSelector.classList.remove('fw-bold');
+
+                const post = allPost.find((searchPost) => searchPost.title === titleText);
+
+                selectors.modalTitle.textContent = post.title;
+                selectors.modalBody.textContent = post.description;
+                titleSelector.href = post.link;
+
+                selectors.modal.classList.add('show');
+                selectors.modal.style.cssText = `
+                  display: block;
+                  background-color: rgba(0,0,0,.5);
+                `;
+
+                selectors.body.style.cssText = ` 
+                  overflow: hidden; 
+                  padding-right: 17px;
+                `;
+              }
+            });
           })
           .catch((error) => {
             if (error.isParsingError) {
@@ -130,5 +162,15 @@ export default function app() {
         watchedState.form.validUrl = true;
         watchedState.form.errors = errorValidation.message;
       });
+  });
+
+  selectors.btnClose.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
+  });
+
+  selectors.btnSecondary.addEventListener('click', () => {
+    selectors.modal.style.cssText = 'display: none';
+    selectors.body.style.cssText = '';
   });
 }
