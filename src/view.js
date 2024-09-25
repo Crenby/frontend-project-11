@@ -100,17 +100,41 @@ function upDataRender(state, selectors, i18n) {
   ul.prepend(li);
 }
 
+function openModal(selectors, value) {
+  const {
+    modalTitle, modalBody, modal, body,
+  } = selectors;
+  const [titleSelector, post] = value;
+
+  titleSelector.classList.add('fw-normal', 'link-secondary');
+  titleSelector.classList.remove('fw-bold');
+
+  modalTitle.textContent = post.title;
+  modalBody.textContent = post.description;
+  titleSelector.href = post.link;
+
+  modal.classList.add('show');
+  modal.style.cssText = `
+    display: block;
+    background-color: rgba(0,0,0,.5);
+  `;
+
+  body.style.cssText = ` 
+    overflow: hidden; 
+    padding-right: 17px;
+  `;
+}
+
 function view(state, path, value, selectors, i18n) {
-  const { feedback } = selectors;
+  const { feedback, modal, body } = selectors;
   switch (path) {
-    case 'form.validUrl':
+    case 'form.errors':
       if (value) {
         selectors.input.classList.add('is-invalid');
       } else {
         selectors.input.classList.remove('is-invalid');
       }
-      break;
-    case 'form.errors':
+
       feedback.textContent = value;
       feedback.classList.add('text-danger');
       feedback.classList.remove('text-success');
@@ -126,6 +150,13 @@ function view(state, path, value, selectors, i18n) {
       break;
     case 'posts':
       upDataRender(state, selectors, i18n);
+      break;
+    case 'event.closeModal':
+      modal.style.cssText = 'display: none';
+      body.style.cssText = '';
+      break;
+    case 'event.openModal':
+      openModal(selectors, value);
       break;
     default:
       break;
