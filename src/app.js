@@ -1,5 +1,4 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
 import view from './view.js';
@@ -50,10 +49,8 @@ export default function app() {
     feeds: [],
     posts: [],
     event: {
-      closeModal: null,
       openModal: null,
     },
-    readPosts: [],
   };
 
   const selectors = {
@@ -89,9 +86,7 @@ export default function app() {
         },
       });
 
-      const watchedState = onChange(state, (path, value) => {
-        view(state, path, value, selectors, i18n);
-      });
+      const watchedState = view(state, selectors, i18n);
 
       upDatingPosts(watchedState);
 
@@ -114,21 +109,6 @@ export default function app() {
                   url: out,
                 });
                 watchedState.form.status = i18n.t('errors.validUrl');
-
-                const title = document.querySelector('.list-group');
-
-                title.addEventListener('click', (event) => {
-                  const { target } = event;
-                  if (target.tagName === 'BUTTON') {
-                    const allPost = [state.posts].flat(Infinity);
-                    const titleSelector = target.parentNode.querySelector('a');
-                    const titleText = titleSelector.textContent;
-                    const post = allPost.find((searchPost) => searchPost.title === titleText);
-
-                    watchedState.event.openModal = [titleSelector, post];
-                    watchedState.readPosts.push(post);
-                  }
-                });
               })
               .catch((error) => {
                 if (error.isParsingError) {
@@ -149,14 +129,24 @@ export default function app() {
           });
       });
 
+      selectors.posts.addEventListener('click', (event) => {
+        const { target } = event;
+        if (target.tagName === 'BUTTON') {
+          const allPost = [state.posts].flat(Infinity);
+          const titleSelector = target.parentNode.querySelector('a');
+          const titleText = titleSelector.textContent;
+          const post = allPost.find((searchPost) => searchPost.title === titleText);
+
+          watchedState.event.openModal = [titleSelector, post];
+        }
+      });
+
       selectors.btnClose.addEventListener('click', () => {
-        watchedState.event.closeModal = 'closeModal';
-        watchedState.event.closeModal = null;
+        watchedState.event.openModal = null;
       });
 
       selectors.btnSecondary.addEventListener('click', () => {
-        watchedState.event.closeModal = 'closeModal';
-        watchedState.event.closeModal = null;
+        watchedState.event.openModal = null;
       });
     });
 }

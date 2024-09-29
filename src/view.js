@@ -1,3 +1,5 @@
+import onChange from 'on-change';
+
 function renderFeeds(state, selectors, i18n) {
   const renderDiv = selectors.feeds;
   renderDiv.innerHTML = '';
@@ -125,42 +127,46 @@ function openModal(selectors, value) {
   `;
 }
 
-function view(state, path, value, selectors, i18n) {
-  const { feedback, modal, body } = selectors;
-  switch (path) {
-    case 'form.errors':
-      if (value) {
-        selectors.input.classList.add('is-invalid');
-      } else {
-        selectors.input.classList.remove('is-invalid');
-      }
+function view(state, selectors, i18n) {
+  const watched = onChange(state, (path, value) => {
+    const { feedback, modal, body } = selectors;
+    switch (path) {
+      case 'form.errors':
+        if (value) {
+          selectors.input.classList.add('is-invalid');
+        } else {
+          selectors.input.classList.remove('is-invalid');
+        }
 
-      feedback.textContent = value;
-      feedback.classList.add('text-danger');
-      feedback.classList.remove('text-success');
-      break;
-    case 'form.status':
-      feedback.textContent = value;
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
-      break;
-    case 'feeds':
-      renderFeeds(state, selectors, i18n);
-      renderPosts(state, selectors, i18n);
-      break;
-    case 'posts':
-      upDataRender(state, selectors, i18n);
-      break;
-    case 'event.closeModal':
-      modal.style.cssText = 'display: none';
-      body.style.cssText = '';
-      break;
-    case 'event.openModal':
-      openModal(selectors, value);
-      break;
-    default:
-      break;
-  }
+        feedback.textContent = value;
+        feedback.classList.add('text-danger');
+        feedback.classList.remove('text-success');
+        break;
+      case 'form.status':
+        feedback.textContent = value;
+        feedback.classList.remove('text-danger');
+        feedback.classList.add('text-success');
+        break;
+      case 'feeds':
+        renderFeeds(state, selectors, i18n);
+        renderPosts(state, selectors, i18n);
+        break;
+      case 'posts':
+        upDataRender(state, selectors, i18n);
+        break;
+      case 'event.openModal':
+        if (value) {
+          openModal(selectors, value);
+        } else {
+          modal.style.cssText = 'display: none';
+          body.style.cssText = '';
+        }
+        break;
+      default:
+        break;
+    }
+  });
+  return watched;
 }
 
 export default view;
